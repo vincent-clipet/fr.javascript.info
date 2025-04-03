@@ -126,34 +126,34 @@ Le standard [Evénements du DOM](https://www.w3.org/TR/DOM-Level-3-Events/) déc
 2. Phase de ciblage -- l'événement a atteind l'élément cible.
 3. Phase de 'bubbling' -- l'événement 'bubble' depuis l'élément.
 
-Voici le schéma de la spécification des phases de capture `(1)`, ciblage `(2)` et 'bubbling' `(3)` pour un événement de clic sur un `<td>` dans une table:
+Voici le schéma de la spécification des phases de capture `(1)`, ciblage `(2)` et 'bubbling' `(3)` pour un événement de clic sur un `<td>` dans une `<table>`:
 
 ![](eventflow.svg)
 
-That is: for a click on `<td>` the event first goes through the ancestors chain down to the element (capturing phase), then it reaches the target and triggers there (target phase), and then it goes up (bubbling phase), calling handlers on its way.
+Pour un clic sur le `<td>`, l'événement traverse d'abord toute la chaîne d'ancêtres jusqu'à l'élément (phase de capture), puis se 'fixe' à la cible et se déclenche ici (phase de ciblage), et enfin il remonte (phase de 'bubbling'), en appelant tous les gestionnaires sur son chemin.
 
-Until now, we only talked about bubbling, because the capturing phase is rarely used.
+Jusqu'à maintenant, on a parlé que que la phase de 'bubbling', car la phase de capture est rarement utilisée.
 
-In fact, the capturing phase was invisible for us, because handlers added using `on<event>`-property or using HTML attributes or using two-argument `addEventListener(event, handler)` don't know anything about capturing, they only run on the 2nd and 3rd phases.
+En réalité, la phase de capture nous était 'invisible', car les gestionnaires ajoutés via les propriétés `on<event>` ou utilisant les attributs HTML ou utilisant les 2 arguments de `addEventListener(event, handler)` ne savent rien de la phase de capture, ils ne s'exécutent que pendant la 2ème et 3ème phase.
 
-To catch an event on the capturing phase, we need to set the handler `capture` option to `true`:
+Pour détecter l'événement pendant la phase de capture, on peut mettre l'option `capture` à `true` dans le gestionnaire:
 
 ```js
 elem.addEventListener(..., {capture: true})
 
-// or, just "true" is an alias to {capture: true}
+// On peut aussi juste envoyer "true", qui est un alias de {capture: true}
 elem.addEventListener(..., true)
 ```
 
-There are two possible values of the `capture` option:
+L'option `capture` a 2 valeurs possibles:
 
-- If it's `false` (default), then the handler is set on the bubbling phase.
-- If it's `true`, then the handler is set on the capturing phase.
+- Si `false` (par défaut), le gestionnaire est défini sur la phase de 'bubbling'.
+- Si `true`, le gestionnaire est défini sur la phase de capture.
 
 
-Note that while formally there are 3 phases, the 2nd phase ("target phase": the event reached the element) is not handled separately: handlers on both capturing and bubbling phases trigger at that phase.
+Notez que même si il y a 3 phases, la 2ème phase ("phase de ciblage": l'événement atteint l'élément) n'est pas géré séparément: les gestionnaires de phases de capture et de 'bubbling' se déclenchent tous les deux pendant cette phase.
 
-Let's see both capturing and bubbling in action:
+Voyons les phases de capture et de 'bubbling' en action:
 
 ```html run autorun height=140 edit
 <style>
@@ -177,14 +177,14 @@ Let's see both capturing and bubbling in action:
 </script>
 ```
 
-The code sets click handlers on *every* element in the document to see which ones are working.
+Ce code ajoute un gestionnaire pour les événements "clic" sur *tous* les éléments du document pour voir lesquels fonctionnent.
 
-If you click on `<p>`, then the sequence is:
+Si on clique sur `<p>`, la séquence est:
 
-1. `HTML` -> `BODY` -> `FORM` -> `DIV -> P` (capturing phase, the first listener):
-2. `P` -> `DIV` -> `FORM` -> `BODY` -> `HTML` (bubbling phase, the second listener).
+1. `HTML` -> `BODY` -> `FORM` -> `DIV` -> `P` (phase de capture):
+2. `P` -> `DIV` -> `FORM` -> `BODY` -> `HTML` (phase de 'bubbling').
 
-Please note, the `P` shows up twice, because we've set two listeners: capturing and bubbling. The target triggers at the end of the first and at the beginning of the second phase.
+Notez que le `P` apparait 2 fois, car on écoute 2 événements: la capture et le 'bubbling'. Le `<p>` cible se déclenche à la fin de la première phase, et au début de la deuxième.
 
 There's a property `event.eventPhase` that tells us the number of the phase on which the event was caught. But it's rarely used, because we usually know it in the handler.
 
